@@ -10,17 +10,30 @@ from playlist_logic import (
     merge_playlists,
     normalize_song,
     search_songs,
+    save_data,
+    load_data,
 )
 
 
 def init_state():
-    """Initialize Streamlit session state."""
+    """Initialize Streamlit session state with persistence."""
+    loaded_songs, loaded_profile, loaded_history = load_data()
+
     if "songs" not in st.session_state:
-        st.session_state.songs = default_songs()
+        st.session_state.songs = loaded_songs if loaded_songs is not None else default_songs()
     if "profile" not in st.session_state:
-        st.session_state.profile = dict(DEFAULT_PROFILE)
+        st.session_state.profile = loaded_profile if loaded_profile is not None else dict(DEFAULT_PROFILE)
     if "history" not in st.session_state:
-        st.session_state.history = []
+        st.session_state.history = loaded_history if loaded_history is not None else []
+
+
+def persist_changes():
+    """Save current session state to disk."""
+    save_data(
+        st.session_state.songs,
+        st.session_state.profile,
+        st.session_state.history
+    )
 
 
 def default_songs():
@@ -255,6 +268,8 @@ def add_song_sidebar():
             all_songs = st.session_state.songs[:]
             all_songs.append(normalized)
             st.session_state.songs = all_songs
+            persist_changes()
+            st.rerun()
 
 
 def playlist_tabs(playlists):
@@ -319,6 +334,7 @@ def lucky_section(playlists):
         history = st.session_state.history
         history.append(pick)
         st.session_state.history = history
+        persist_changes()
 
 
 def stats_section(playlists):
@@ -372,8 +388,12 @@ def clear_controls():
     st.sidebar.header("Manage data")
     if st.sidebar.button("Reset songs to default"):
         st.session_state.songs = default_songs()
+        persist_changes()
+        st.rerun()
     if st.sidebar.button("Clear history"):
         st.session_state.history = []
+        persist_changes()
+        st.rerun()
 
 
 def main():
@@ -389,6 +409,9 @@ def main():
     profile_sidebar()
     add_song_sidebar()
     clear_controls()
+
+    # Persist profile changes from the sidebar
+    persist_changes()
 
     profile = st.session_state.profile
     songs = st.session_state.songs

@@ -1,4 +1,6 @@
 from typing import Dict, List, Optional, Tuple
+import json
+import os
 
 Song = Dict[str, object]
 PlaylistMap = Dict[str, List[Song]]
@@ -211,3 +213,29 @@ def history_summary(history: List[Song]) -> Dict[str, int]:
         else:
             counts[mood] += 1
     return counts
+
+
+DATA_FILE = "playlist_data.json"
+
+
+def save_data(songs: List[Song], profile: Dict[str, object], history: List[Song]):
+    """Save songs, profile, and history to a JSON file."""
+    data = {
+        "songs": songs,
+        "profile": profile,
+        "history": history,
+    }
+    with open(DATA_FILE, "w") as f:
+        json.dump(data, f)
+
+
+def load_data() -> Tuple[Optional[List[Song]], Optional[Dict[str, object]], Optional[List[Song]]]:
+    """Load songs, profile, and history from a JSON file."""
+    if not os.path.exists(DATA_FILE):
+        return None, None, None
+    try:
+        with open(DATA_FILE, "r") as f:
+            data = json.load(f)
+            return data.get("songs"), data.get("profile"), data.get("history")
+    except (json.JSONDecodeError, IOError):
+        return None, None, None
