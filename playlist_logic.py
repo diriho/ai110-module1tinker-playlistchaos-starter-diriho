@@ -99,10 +99,12 @@ def build_playlists(songs: List[Song], profile: Dict[str, object]) -> PlaylistMa
 
 def merge_playlists(a: PlaylistMap, b: PlaylistMap) -> PlaylistMap:
     """Merge two playlist maps into a new map."""
-    merged: PlaylistMap = {}
-    for key in set(list(a.keys()) + list(b.keys())):
-        merged[key] = a.get(key, [])
-        merged[key].extend(b.get(key, []))
+    merged: PlaylistMap = {key: list(songs) for key, songs in a.items()}
+    for key, songs in b.items():
+        if key in merged:
+            merged[key].extend(songs)
+        else:
+            merged[key] = list(songs)
     return merged
 
 
@@ -168,7 +170,7 @@ def search_songs(
 
     for song in songs:
         value = str(song.get(field, "")).lower()
-        if value and value in q:
+        if q in value:
             filtered.append(song)
 
     return filtered
@@ -193,6 +195,8 @@ def random_choice_or_none(songs: List[Song]) -> Optional[Song]:
     """Return a random song or None."""
     import random
 
+    if not songs:
+        return None
     return random.choice(songs)
 
 

@@ -210,10 +210,12 @@ def profile_sidebar():
             value=int(profile.get("chill_max_energy", 3)),
         )
 
+    options = ["rock", "lofi", "pop", "jazz", "electronic", "ambient", "other"]
+    current_genre = profile.get("favorite_genre", "rock")
     profile["favorite_genre"] = st.sidebar.selectbox(
         "Favorite genre",
-        options=["rock", "lofi", "pop", "jazz", "electronic", "ambient", "other"],
-        index=0,
+        options=options,
+        index=options.index(current_genre) if current_genre in options else 0,
     )
 
     profile["include_mixed"] = st.sidebar.checkbox(
