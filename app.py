@@ -12,6 +12,7 @@ from playlist_logic import (
     search_songs,
     save_data,
     load_data,
+    is_duplicate_song,
 )
 
 
@@ -266,6 +267,11 @@ def add_song_sidebar():
         if title and artist:
             normalized = normalize_song(song)
             all_songs = st.session_state.songs[:]
+            
+            if is_duplicate_song(all_songs, normalized):
+                st.sidebar.error(f"'{normalized['title']}' by {normalized['artist']} is already in the playlist!")
+                return
+
             all_songs.append(normalized)
             st.session_state.songs = all_songs
             persist_changes()

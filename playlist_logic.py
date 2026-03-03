@@ -239,3 +239,16 @@ def load_data() -> Tuple[Optional[List[Song]], Optional[Dict[str, object]], Opti
             return data.get("songs"), data.get("profile"), data.get("history")
     except (json.JSONDecodeError, IOError):
         return None, None, None
+
+
+def is_duplicate_song(songs: List[Song], new_song: Song) -> bool:
+    """Return True if the song (by title and artist) already exists in the list."""
+    new_title = str(new_song.get("title", "")).strip().lower()
+    new_artist = str(new_song.get("artist", "")).strip().lower()
+
+    for song in songs:
+        curr_title = str(song.get("title", "")).strip().lower()
+        curr_artist = str(song.get("artist", "")).strip().lower()
+        if curr_title == new_title and curr_artist == new_artist:
+            return True
+    return False
