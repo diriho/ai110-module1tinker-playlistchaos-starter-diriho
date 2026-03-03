@@ -13,6 +13,7 @@ from playlist_logic import (
     save_data,
     load_data,
     is_duplicate_song,
+    remove_duplicates,
 )
 
 
@@ -21,7 +22,9 @@ def init_state():
     loaded_songs, loaded_profile, loaded_history = load_data()
 
     if "songs" not in st.session_state:
-        st.session_state.songs = loaded_songs if loaded_songs is not None else default_songs()
+        # Load from disk or defaults, then strip any duplicates
+        base_songs = loaded_songs if loaded_songs is not None else default_songs()
+        st.session_state.songs = remove_duplicates(base_songs)
     if "profile" not in st.session_state:
         st.session_state.profile = loaded_profile if loaded_profile is not None else dict(DEFAULT_PROFILE)
     if "history" not in st.session_state:
@@ -390,8 +393,15 @@ def history_section():
 
 
 def clear_controls():
-    """Render a small section for clearing data."""
+    """Render a small section for clearing data or removing duplicates."""
     st.sidebar.header("Manage data")
+    if st.sidebar.button("Remove all duplicates"):
+        deduplicated = remove_duplicates(st.session_state.songs)
+        num_removed = len(st.session_state.songs) - len(deduplicated)
+        st.session_state.songs = deduplicated
+        persist_changes()
+        st.sidebar.success(f"Removed {num_removed} duplicate(s)!")
+        st.rerun()
     if st.sidebar.button("Reset songs to default"):
         st.session_state.songs = default_songs()
         persist_changes()

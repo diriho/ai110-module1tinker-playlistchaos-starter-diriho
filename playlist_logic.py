@@ -252,3 +252,18 @@ def is_duplicate_song(songs: List[Song], new_song: Song) -> bool:
         if curr_title == new_title and curr_artist == new_artist:
             return True
     return False
+
+
+def remove_duplicates(songs: List[Song]) -> List[Song]:
+    """Return a new list of songs with duplicates removed (same title and artist)."""
+    seen = set()
+    deduplicated = []
+    for song in songs:
+        key = (
+            str(song.get("title", "")).strip().lower(),
+            str(song.get("artist", "")).strip().lower(),
+        )
+        if key not in seen:
+            seen.add(key)
+            deduplicated.append(song)
+    return deduplicated
